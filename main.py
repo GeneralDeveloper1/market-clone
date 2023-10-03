@@ -8,10 +8,19 @@ import sqlite3
 con = sqlite3.connect('db.db', check_same_thread=False)
 cur = con.cursor()
 
+cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS items (
+	id INTEGER PRIMARY KEY,
+	title TEXT NOT NULL,
+	image BLOB ,
+	price INTEGER NOT NULL,
+	description TEXT,
+	place TEXT NOT NULL,
+	insertAt INTEGER NOT NULL
+);
+            """)
+
 app = FastAPI()
-
-    
-
 
 @app.post("/items")
 async def create_item(image:UploadFile,
@@ -49,7 +58,20 @@ async def get_image(item_id):
                               SELECT image from items WHERE id ={item_id}
                               """).fetchone()[0]#tuple
     #16진법으로 되어있는 이미지를 byte코드로 해석으로 해서 응답 보냄
-    return Response(content=bytes.fromhex(iamge_bytes))
+    return Response(content=bytes.fromhex(iamge_bytes), media_type='image/*')
 
+@app.post("/signup")
+def signup(id:Annotated[str,Form()],
+           password:Annotated[str,Form()],
+           name:Annotated[str,Form()],
+           email:Annotated[str,Form()]):
+    
+    cur.execute(f"""
+                INSERT INTO users(id, name, email, password)
+                VALUES('{id}','{name}', '{email}','{password}')
+                """)
+    con.commit()
+    #print(id, password);
+    return "200"
 
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

@@ -1,4 +1,4 @@
-const form = document.getElementById("write-form");
+const form = document.querySelector("#write-form");
 
 const handleSubmitForm = async (event) => {
   event.preventDefault();
